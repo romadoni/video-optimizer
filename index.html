@@ -1,19 +1,875 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Video Optimizer</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family:
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+            background: #f5f7fa;
+            color: #111827;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            margin: 0 0 30px;
+            color: #6b7280;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 45px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .drop-zone:hover {
+            border-color: #64748b;
+            background: #f8fafc;
+        }
+
+        .drop-zone.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .drop-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .drop-description {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button,
+        .primary {
+            border: 0;
+            border-radius: 9px;
+            padding: 11px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+        }
+
+        button:hover,
+        .primary:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-buttons button {
+            padding: 7px 12px;
+            font-size: 13px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .stats-grid,
+        .result-summary {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .stat {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        #rawMetadata {
+            margin-top: 20px;
+            padding: 15px;
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .estimate-box {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .estimate-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .estimate-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .estimate-value {
+            font-weight: 700;
+        }
+
+        .encode-area {
+            margin-top: 25px;
+        }
+
+        #progressContainer {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        #progressFill {
+            width: 0%;
+            height: 100%;
+            background: #2563eb;
+            transition: width 0.2s;
+        }
+
+        #progressText {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        #resultVideo {
+            width: 100%;
+            max-width: 900px;
+            border-radius: 12px;
+            display: block;
+            margin-bottom: 20px;
+            background: #000;
+        }
+
+        #downloadLink {
+            display: inline-block;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 9px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
+<div class="container">
+
     <h1>Video Optimizer</h1>
 
-    <p>
+    <p class="subtitle">
         Compress video langsung di browser.
     </p>
+
+
+    <!-- ========================= -->
+    <!-- SELECT VIDEO -->
+    <!-- ========================= -->
+
+    <section class="card">
+
+        <div class="section-title">
+            Select Video
+        </div>
+
+        <div id="dropZone" class="drop-zone">
+
+            <div class="drop-title">
+                Drop your video here
+            </div>
+
+            <div class="drop-description">
+                atau pilih video dari komputer
+            </div>
+
+            <button
+                id="chooseButton"
+                type="button"
+                class="secondary">
+                Choose Video
+            </button>
+
+        </div>
+
+        <input
+            id="videoInput"
+            type="file"
+            accept="video/*">
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- VIDEO ANALYSIS -->
+    <!-- ========================= -->
+
+    <section
+        id="analysisCard"
+        class="card hidden">
+
+        <div class="section-title">
+            Video Analysis
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat">
+                <div class="stat-label">
+                    File Size
+                </div>
+
+                <div
+                    id="metaSize"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Duration
+                </div>
+
+                <div
+                    id="metaDuration"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Resolution
+                </div>
+
+                <div
+                    id="metaResolution"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    FPS
+                </div>
+
+                <div
+                    id="metaFPS"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Video Codec
+                </div>
+
+                <div
+                    id="metaVideoCodec"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Video Bitrate
+                </div>
+
+                <div
+                    id="metaVideoBitrate"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Audio Codec
+                </div>
+
+                <div
+                    id="metaAudioCodec"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Audio Bitrate
+                </div>
+
+                <div
+                    id="metaAudioBitrate"
+                    class="stat-value">
+                    -
+                </div>
+            </div>
+
+        </div>
+
+
+        <pre id="rawMetadata"></pre>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- COMPRESSION -->
+    <!-- ========================= -->
+
+    <section
+        id="compressCard"
+        class="card hidden">
+
+        <div class="section-title">
+            Compression
+        </div>
+
+
+        <div class="settings-grid">
+
+
+            <!-- Compression Mode -->
+
+            <div class="field">
+
+                <label>
+                    Compression Mode
+                </label>
+
+                <select id="compressionMode">
+
+                    <option value="target">
+                        Target Size
+                    </option>
+
+                    <option value="crf">
+                        Quality / CRF
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Target Size -->
+
+            <div
+                class="field"
+                id="targetSizeField">
+
+                <label>
+                    Maximum Size (MB)
+                </label>
+
+                <input
+                    id="targetSize"
+                    type="number"
+                    min="1"
+                    max="50000"
+                    step="1"
+                    value="25">
+
+
+                <div class="quick-buttons">
+
+                    <button
+                        type="button"
+                        class="secondary quick-size"
+                        data-size="8">
+                        8 MB
+                    </button>
+
+                    <button
+                        type="button"
+                        class="secondary quick-size"
+                        data-size="25">
+                        25 MB
+                    </button>
+
+                    <button
+                        type="button"
+                        class="secondary quick-size"
+                        data-size="50">
+                        50 MB
+                    </button>
+
+                    <button
+                        type="button"
+                        class="secondary quick-size"
+                        data-size="100">
+                        100 MB
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- CRF -->
+
+            <div
+                class="field hidden"
+                id="crfField">
+
+                <label>
+                    CRF
+                </label>
+
+                <input
+                    id="crf"
+                    type="number"
+                    min="0"
+                    max="63"
+                    step="1"
+                    value="28">
+
+            </div>
+
+
+            <!-- Video Encoder -->
+
+            <div class="field">
+
+                <label>
+                    Video Encoder
+                </label>
+
+                <select id="videoEncoder">
+
+                    <!-- DEFAULT -->
+                    <option
+                        value="libx264"
+                        selected>
+                        H.264 / AVC
+                    </option>
+
+                    <option value="libx265">
+                        H.265 / HEVC
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Preset -->
+
+            <div class="field">
+
+                <label>
+                    Preset
+                </label>
+
+                <select id="preset">
+
+                    <option value="medium" selected>
+                        medium
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Audio -->
+
+            <div class="field">
+
+                <label>
+                    Audio Bitrate
+                </label>
+
+                <select id="audioBitrate">
+
+                    <option value="64">
+                        64 kbps
+                    </option>
+
+                    <option value="96">
+                        96 kbps
+                    </option>
+
+                    <option value="128" selected>
+                        128 kbps
+                    </option>
+
+                    <option value="160">
+                        160 kbps
+                    </option>
+
+                    <option value="192">
+                        192 kbps
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ESTIMATION -->
+        <!-- ========================= -->
+
+        <div class="estimate-box">
+
+            <div class="estimate-item">
+
+                <div class="estimate-label">
+                    Original Size
+                </div>
+
+                <div
+                    id="estimateOriginal"
+                    class="estimate-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="estimate-item">
+
+                <div class="estimate-label">
+                    Target Size
+                </div>
+
+                <div
+                    id="estimateTarget"
+                    class="estimate-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="estimate-item">
+
+                <div class="estimate-label">
+                    Estimated Bitrate
+                </div>
+
+                <div
+                    id="estimateBitrate"
+                    class="estimate-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="estimate-item">
+
+                <div class="estimate-label">
+                    Estimated Reduction
+                </div>
+
+                <div
+                    id="estimateReduction"
+                    class="estimate-value">
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- ENCODING -->
+        <!-- ========================= -->
+
+        <div class="encode-area">
+
+            <button
+                id="encodeButton"
+                type="button">
+                Encode Video
+            </button>
+
+
+            <div
+                id="progressContainer"
+                class="hidden">
+
+                <div class="progress-bar">
+
+                    <div id="progressFill"></div>
+
+                </div>
+
+
+                <div id="progressText">
+                    0%
+                </div>
+
+            </div>
+
+
+            <div id="status"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- RESULT -->
+    <!-- ========================= -->
+
+    <section
+        id="resultCard"
+        class="card result hidden">
+
+        <div class="section-title">
+            Result
+        </div>
+
+
+        <video
+            id="resultVideo"
+            controls>
+        </video>
+
+
+        <div class="result-summary">
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Original
+                </div>
+
+                <div
+                    id="resultOriginal"
+                    class="stat-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Output
+                </div>
+
+                <div
+                    id="resultOutput"
+                    class="stat-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Saved
+                </div>
+
+                <div
+                    id="resultSaved"
+                    class="stat-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Status
+                </div>
+
+                <div
+                    id="resultStatus"
+                    class="stat-value">
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <a
+            id="downloadLink"
+            class="primary"
+            href="#"
+            download>
+
+            ⬇ Download Optimized Video
+
+        </a>
+
+    </section>
+
+</div>
+
+
+<script
+    type="module"
+    src="/app.js">
+</script>
 
 </body>
 </html>
